@@ -1,75 +1,201 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { StatusBar } from "expo-status-bar";
+import React, { useMemo, useState } from "react";
+import { Platform, Pressable, SafeAreaView, StyleSheet, Text, TextInput, View } from "react-native";
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
 
-export default function HomeScreen() {
+export default function App() {
+  const [aRaw, setARaw] = useState("");
+  const [bRaw, setBRaw] = useState("");
+  const [result, setResult] = useState<string | null>(null);
+  const [lastOp, setLastOp] = useState<"+" | "-" | null>(null);
+
+  const validPattern = /^-?\d*(?:[\.,]\d*)?$/;
+
+  const aValid = useMemo(() => validPattern.test(aRaw), [aRaw]);
+  const bValid = useMemo(() => validPattern.test(bRaw), [bRaw]);
+
+  const parseNumber = (s: string): number | null => {
+    if (!s) return null; 
+    if (!validPattern.test(s)) return null;
+    const normalized = s.replace(",", ".");
+    if (normalized === "-" || normalized === "." || normalized === "-." || normalized === "-.") return null;
+    const n = Number(normalized);
+    return Number.isFinite(n) ? n : null;
+  };
+
+  const a = useMemo(() => parseNumber(aRaw), [aRaw]);
+  const b = useMemo(() => parseNumber(bRaw), [bRaw]);
+
+  const inputsMissing = a === null || b === null;
+  const hasErrors = !aValid || !bValid || inputsMissing;
+
+  const compute = (op: "+" | "-") => {
+    if (a === null || b === null) {
+      setResult("Syötteet puuttuvat tai ovat virheellisiä");
+      setLastOp(null);
+      return;
+    }
+    const value = op === "+" ? a + b : a - b;
+    const formatted = Number.isInteger(value) ? value.toString() : value.toFixed(6).replace(/0+$/, "").replace(/\.$/, "");
+    setResult(formatted);
+    setLastOp(op);
+  };
+
+  const clearAll = () => {
+    setARaw("");
+    setBRaw("");
+    setResult(null);
+    setLastOp(null);
+  };
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Hello World!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+    <SafeAreaView style={styles.safe}>
+      <StatusBar style="auto" />
+      <View style={styles.container}>
+        <Text style={styles.h1}>Laskin</Text>
+        <Text style={styles.helper}>
+          Syötä kaksi numeroa. Desimaalierotin voi olla "," tai ".". Negatiiviset luvut ok.
+        </Text>
+
+        <View style={styles.inputsRow}>
+          <View style={styles.inputCol}>
+            <Text style={styles.label}>Luku A</Text>
+            <TextInput
+              value={aRaw}
+              onChangeText={setARaw}
+              placeholder="esim. 12,5"
+              accessibilityLabel="Ensimmäinen luku"
+              keyboardType={Platform.OS === "ios" ? "decimal-pad" : "numeric"}
+              inputMode="decimal"
+              returnKeyType="done"
+              style={[styles.input, !aValid && styles.inputError]}
+            />
+            {!aValid && <Text style={styles.error}>Virheellinen syöte</Text>}
+          </View>
+
+          <View style={styles.inputCol}>
+            <Text style={styles.label}>Luku B</Text>
+            <TextInput
+              value={bRaw}
+              onChangeText={setBRaw}
+              placeholder="esim. 3.75"
+              accessibilityLabel="Toinen luku"
+              keyboardType={Platform.OS === "ios" ? "decimal-pad" : "numeric"}
+              inputMode="decimal"
+              returnKeyType="done"
+              style={[styles.input, !bValid && styles.inputError]}
+            />
+            {!bValid && <Text style={styles.error}>Virheellinen syöte</Text>}
+          </View>
+        </View>
+
+        <View style={styles.buttonsRow}>
+          <CalcButton title="+" onPress={() => compute("+")} disabled={hasErrors} />
+          <CalcButton title="-" onPress={() => compute("-")} disabled={hasErrors} />
+          <CalcButton title="Tyhjennä" onPress={clearAll} variant="ghost" />
+        </View>
+
+        <View style={styles.resultCard}>
+          <Text style={styles.resultLabel}>Tulos</Text>
+          <Text style={styles.resultValue} accessibilityRole="header">
+            {result === null ? "–" : result}
+          </Text>
+          {hasErrors && (
+            <Text style={styles.resultHint}>
+              Varmista että molemmat kentät sisältävät kelvollisen numeron.
+            </Text>
+          )}
+        </View>
+
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>
+          </Text>
+        </View>
+      </View>
+    </SafeAreaView>
+  );
+}
+
+function CalcButton({ title, onPress, disabled, variant = "solid" }: {
+  title: string;
+  onPress: () => void;
+  disabled?: boolean;
+  variant?: "solid" | "ghost";
+}) {
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityState={{ disabled: !!disabled }}
+      onPress={onPress}
+      disabled={disabled}
+      style={({ pressed }) => [
+        styles.button,
+        variant === "ghost" && styles.buttonGhost,
+        disabled && styles.buttonDisabled,
+        pressed && !disabled && styles.buttonPressed,
+      ]}
+    >
+      <Text style={[styles.buttonText, variant === "ghost" && styles.buttonTextGhost]}>{title}</Text>
+    </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  safe: { flex: 1, backgroundColor: "#0f172a" },
+  container: { flex: 1, padding: 20, gap: 16 },
+  h1: { fontSize: 28, fontWeight: "700", color: "#e2e8f0" },
+  helper: { color: "#94a3b8" },
+
+  inputsRow: { flexDirection: "row", gap: 12 },
+  inputCol: { flex: 1 },
+  label: { color: "#cbd5e1", marginBottom: 6 },
+  input: {
+    backgroundColor: "#0b1220",
+    borderWidth: 1,
+    borderColor: "#334155",
+    color: "#e2e8f0",
+    paddingHorizontal: 12,
+    paddingVertical: 12,
+    borderRadius: 12,
+    fontSize: 16,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  inputError: { borderColor: "#f87171", backgroundColor: "#201014" },
+  error: { color: "#fca5a5", marginTop: 6, fontSize: 12 },
+
+  buttonsRow: { flexDirection: "row", gap: 12, marginTop: 8 },
+  button: {
+    backgroundColor: "#22c55e",
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    minWidth: 80,
+    alignItems: "center",
+    justifyContent: "center",
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  buttonGhost: {
+    backgroundColor: "transparent",
+    borderWidth: 1,
+    borderColor: "#334155",
   },
+  buttonDisabled: { opacity: 0.5 },
+  buttonPressed: { transform: [{ scale: 0.98 }] },
+  buttonText: { color: "#052e16", fontWeight: "700", fontSize: 18 },
+  buttonTextGhost: { color: "#e2e8f0" },
+
+  resultCard: {
+    backgroundColor: "#0b1220",
+    borderWidth: 1,
+    borderColor: "#334155",
+    padding: 16,
+    borderRadius: 16,
+    gap: 6,
+    marginTop: 8,
+  },
+  resultLabel: { color: "#94a3b8", fontSize: 12, textTransform: "uppercase" },
+  resultValue: { color: "#e2e8f0", fontSize: 32, fontWeight: "800" },
+  resultHint: { color: "#94a3b8" },
+  opNote: { color: "#64748b", fontSize: 12 },
+
+  footer: { marginTop: "auto" },
+  footerText: { color: "#94a3b8" },
 });
