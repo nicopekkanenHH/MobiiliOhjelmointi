@@ -19,9 +19,7 @@ export default function TabLayout() {
         tabBarButton: HapticTab,
         tabBarBackground: TabBarBackground,
         tabBarStyle: Platform.select({
-          ios: {
-            position: 'absolute',
-          },
+          ios: {},
           default: {},
         }),
       }}>
@@ -35,7 +33,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="guess" 
         options={{
-         title: 'Guess',
+         title: 'Arvaus',
          tabBarIcon: ({ color }) => (
           <IconSymbol size={28} name="gamecontroller.fill" color={color} />
     ),
@@ -48,6 +46,33 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="cart.fill" color={color} />,
         }}
       />
+      <Tabs.Screen
+  name="history"
+  options={{
+    href: null,
+    title: 'History',
+  }}
+/>
+<Tabs.Screen
+  name="recipes"
+  options={{
+    title: 'Reseptit',
+    tabBarIcon: ({ color }) => <IconSymbol size={28} name="book.fill" color={color} />,
+  }}
+/>
+<Tabs.Screen
+    name="recipes/[id]"
+    options={{
+      href: null, 
+    }}
+  />
+  <Tabs.Screen
+  name="converter"
+  options={{
+    title: 'Valuutta',
+    tabBarIcon: ({ color }) => <IconSymbol size={28} name="eurosign.circle.fill" color={color} />,
+  }}
+/>
     </Tabs>
   );
 }

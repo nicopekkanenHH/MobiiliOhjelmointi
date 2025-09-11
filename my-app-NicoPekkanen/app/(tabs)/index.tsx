@@ -1,7 +1,7 @@
+import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React, { useMemo, useState } from 'react';
 import {
-  FlatList,
   Platform,
   Pressable,
   SafeAreaView,
@@ -10,21 +10,16 @@ import {
   TextInput,
   View,
 } from 'react-native';
-
-type Op = '+' | '-';
-
-interface CalcRow {
-  id: string;
-  expr: string;
-  result: string;
-}
+import { Op, useCalcHistory } from '../context/CalcHistoryContext';
 
 export default function CalculatorScreen() {
+  const router = useRouter();
+  const { add } = useCalcHistory();
+
   const [aRaw, setARaw] = useState('');
   const [bRaw, setBRaw] = useState('');
   const [result, setResult] = useState<string | null>(null);
   const [lastOp, setLastOp] = useState<Op | null>(null);
-  const [history, setHistory] = useState<CalcRow[]>([]);
 
   const validPattern = /^-?\d*(?:[\.,]\d*)?$/;
   const aValid = useMemo(() => validPattern.test(aRaw), [aRaw]);
@@ -48,10 +43,6 @@ export default function CalculatorScreen() {
   const formatNumber = (n: number) =>
     Number.isInteger(n) ? n.toString() : n.toFixed(6).replace(/0+$/, '').replace(/\.$/, '');
 
-  const addToHistory = (expr: string, res: string) => {
-    setHistory(h => [{ id: `${Date.now()}-${Math.random()}`, expr, result: res }, ...h]);
-  };
-
   const compute = (op: Op) => {
     if (a === null || b === null) {
       setResult('Syötteet puuttuvat tai ovat virheellisiä');
@@ -62,7 +53,8 @@ export default function CalculatorScreen() {
     const formatted = formatNumber(value);
     setResult(formatted);
     setLastOp(op);
-    addToHistory(`${formatNumber(a)} ${op} ${formatNumber(b)}`, formatted);
+    // TÄRKEÄ: pusketaan historiaan Contextin kautta
+    add(`${formatNumber(a)} ${op} ${formatNumber(b)}`, formatted);
   };
 
   const clearAll = () => {
@@ -71,8 +63,6 @@ export default function CalculatorScreen() {
     setResult(null);
     setLastOp(null);
   };
-
-  const clearHistory = () => setHistory([]);
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -136,45 +126,13 @@ export default function CalculatorScreen() {
           )}
         </View>
 
-        <View style={[styles.resultCard, { flex: 1 }]}>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Text style={styles.resultLabel}>Historia</Text>
-            <Pressable
-              onPress={clearHistory}
-              style={({ pressed }) => [
-                styles.buttonGhost,
-                { paddingVertical: 6, paddingHorizontal: 10, borderRadius: 8 },
-                pressed && { opacity: 0.8 },
-              ]}
-            >
-              <Text style={styles.buttonTextGhost}>Clear history</Text>
-            </Pressable>
-          </View>
-
-          <FlatList
-            data={history}
-            keyExtractor={(item) => item.id}
-            ListEmptyComponent={<Text style={styles.helper}>Ei laskuhistoriaa vielä.</Text>}
-            contentContainerStyle={{ gap: 8, paddingVertical: 8 }}
-            renderItem={({ item }) => (
-              <View
-                style={{
-                  flexDirection: 'row',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  borderWidth: 1,
-                  borderColor: '#334155',
-                  borderRadius: 12,
-                  padding: 12,
-                }}
-              >
-                <Text style={{ color: '#e2e8f0' }}>{item.expr}</Text>
-                <Text style={{ color: '#94a3b8', fontWeight: '700' }}>= {item.result}</Text>
-              </View>
-            )}
-            style={{ marginTop: 8 }}
-          />
-        </View>
+        {/* History-painike: navigoi erilliselle sivulle */}
+        <Pressable
+          onPress={() => router.push('/(tabs)/history')}
+          style={({ pressed }) => [styles.button, pressed && { transform: [{ scale: 0.98 }] }]}
+        >
+          <Text style={styles.buttonText}>History</Text>
+        </Pressable>
       </View>
     </SafeAreaView>
   );
@@ -237,7 +195,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 12,
-    minWidth: 80,
+    minWidth: 110,
     alignItems: 'center',
     justifyContent: 'center',
   },
