@@ -10,7 +10,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { Op, useCalcHistory } from '../context/CalcHistoryContext';
+import { Op, useCalcHistory } from '../context/_CalcHistoryContext';
 
 export default function CalculatorScreen() {
   const router = useRouter();
@@ -53,7 +53,7 @@ export default function CalculatorScreen() {
     const formatted = formatNumber(value);
     setResult(formatted);
     setLastOp(op);
-    // TÄRKEÄ: pusketaan historiaan Contextin kautta
+  
     add(`${formatNumber(a)} ${op} ${formatNumber(b)}`, formatted);
   };
 

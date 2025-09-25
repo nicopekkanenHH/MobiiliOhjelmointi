@@ -36,3 +36,7 @@ export function useCalcHistory() {
   if (!ctx) throw new Error('useCalcHistory must be used within CalcHistoryProvider');
   return ctx;
 }
+
+export default function _ContextNoRoute() {
+  return null;
+}

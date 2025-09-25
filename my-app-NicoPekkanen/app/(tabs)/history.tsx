@@ -2,7 +2,7 @@ import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React from 'react';
 import { FlatList, Pressable, SafeAreaView, StyleSheet, Text, View } from 'react-native';
-import { useCalcHistory } from '../context/CalcHistoryContext';
+import { useCalcHistory } from '../context/_CalcHistoryContext';
 
 export default function HistoryScreen() {
   const router = useRouter();
