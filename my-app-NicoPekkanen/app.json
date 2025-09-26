@@ -46,7 +46,8 @@
         {
           "locationAlwaysAndWhenInUsePermission": "Sovellus käyttää sijaintiasi lähikohteiden näyttämiseen."
         }
-      ]
+      ],
+      "expo-sqlite"
     ],
     "experiments": {
       "typedRoutes": true
