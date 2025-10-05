@@ -11,46 +11,52 @@
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
-        "NSLocationWhenInUseUsageDescription": "Sovellus käyttää sijaintiasi lähikohteiden näyttämiseen."
+        "NSLocationWhenInUseUsageDescription": "Sovellus käyttää sijaintiasi lähikohteiden näyttämiseen.",
+        "NSContactsUsageDescription": "Sovellus tarvitsee pääsyn yhteystietoihisi, jotta voit hakea ja viestiä kontakteille."
       }
-    },
-    "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      },
-      "edgeToEdgeEnabled": true,
-      "permissions": [
-        "ACCESS_COARSE_LOCATION",
-        "ACCESS_FINE_LOCATION"
-      ]
-    },
-    "web": {
-      "bundler": "metro",
-      "output": "static",
-      "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
       "expo-router",
-      [
-        "expo-splash-screen",
-        {
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 200,
-          "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
-        }
-      ],
-      [
-        "expo-location",
-        {
-          "locationAlwaysAndWhenInUsePermission": "Sovellus käyttää sijaintiasi lähikohteiden näyttämiseen."
-        }
-      ],
-      "expo-sqlite"
+      "expo-web-browser"
+    ]
+  },
+  "android": {
+    "adaptiveIcon": {
+      "foregroundImage": "./assets/images/adaptive-icon.png",
+      "backgroundColor": "#ffffff"
+    },
+    "edgeToEdgeEnabled": true,
+    "permissions": [
+      "ACCESS_COARSE_LOCATION",
+      "ACCESS_FINE_LOCATION",
+      "READ_CONTACTS"
+    ]
+  },
+  "web": {
+    "bundler": "metro",
+    "output": "static",
+    "favicon": "./assets/images/favicon.png"
+  },
+  "plugins": [
+    "expo-router",
+    [
+      "expo-splash-screen",
+      {
+        "image": "./assets/images/splash-icon.png",
+        "imageWidth": 200,
+        "resizeMode": "contain",
+        "backgroundColor": "#ffffff"
+      }
     ],
-    "experiments": {
-      "typedRoutes": true
-    }
+    [
+      "expo-location",
+      {
+        "locationAlwaysAndWhenInUsePermission": "Sovellus käyttää sijaintiasi lähikohteiden näyttämiseen."
+      }
+    ],
+    "expo-sqlite"
+  ],
+  "experiments": {
+    "typedRoutes": true
   }
 }

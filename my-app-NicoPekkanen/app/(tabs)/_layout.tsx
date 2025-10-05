@@ -93,6 +93,20 @@ export default function TabLayout() {
     title: 'SQLite',
   }}
 />
+<Tabs.Screen
+  name="contacts"
+  options={{
+    title: 'Contacts',
+    tabBarIcon: ({ color }) => <IconSymbol size={28} name="person.2.fill" color={color} />,
+  }}
+/>
+<Tabs.Screen
+  name="speech"
+  options={{
+    title: 'Speech',
+    tabBarIcon: ({ color }) => <IconSymbol size={28} name="waveform" color={color} />,
+  }}
+/>
     </Tabs>
   );
 }
